@@ -1,0 +1,195 @@
+{
+  "info": {
+    "name": "Wallet Service API",
+    "description": "API collection for testing the Wallet/Ledger Service",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "item": [
+    {
+      "name": "1. Create Wallet",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "if (pm.response.code === 201) {",
+              "    const response = pm.response.json();",
+              "    pm.collectionVariables.set('walletId', response.id);",
+              "    console.log('Wallet ID saved:', response.id);",
+              "}"
+            ],
+            "type": "text/javascript"
+          }
+        }
+      ],
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"initialBalance\": 1000,\n  \"currency\": \"EGP\"\n}"
+        },
+        "url": {
+          "raw": "{{baseUrl}}/wallet",
+          "host": ["{{baseUrl}}"],
+          "path": ["wallet"]
+        },
+        "description": "Creates a new wallet with initial balance. The wallet ID is automatically saved to the walletId variable."
+      },
+      "response": []
+    },
+    {
+      "name": "2. Create Deposit Transaction",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"transactionId\": \"tx-deposit-{{$randomUUID}}\",\n  \"walletId\": \"{{walletId}}\",\n  \"type\": \"DEPOSIT\",\n  \"amount\": 500,\n  \"currency\": \"EGP\",\n  \"metadata\": {\n    \"source\": \"bank_transfer\"\n  }\n}"
+        },
+        "url": {
+          "raw": "{{baseUrl}}/wallet/transaction",
+          "host": ["{{baseUrl}}"],
+          "path": ["wallet", "transaction"]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "3. Create Withdrawal Transaction",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"transactionId\": \"tx-withdrawal-{{$randomUUID}}\",\n  \"walletId\": \"{{walletId}}\",\n  \"type\": \"WITHDRAWAL\",\n  \"amount\": 200,\n  \"currency\": \"EGP\",\n  \"metadata\": {\n    \"reason\": \"payment\"\n  }\n}"
+        },
+        "url": {
+          "raw": "{{baseUrl}}/wallet/transaction",
+          "host": ["{{baseUrl}}"],
+          "path": ["wallet", "transaction"]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "4. Create USD Deposit (Currency Conversion)",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"transactionId\": \"tx-usd-{{$randomUUID}}\",\n  \"walletId\": \"{{walletId}}\",\n  \"type\": \"DEPOSIT\",\n  \"amount\": 100,\n  \"currency\": \"USD\"\n}"
+        },
+        "url": {
+          "raw": "{{baseUrl}}/wallet/transaction",
+          "host": ["{{baseUrl}}"],
+          "path": ["wallet", "transaction"]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "5. Get Wallet Balance",
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": {
+          "raw": "{{baseUrl}}/wallet/{{walletId}}/balance",
+          "host": ["{{baseUrl}}"],
+          "path": ["wallet", "{{walletId}}", "balance"]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "6. Get Transaction History",
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": {
+          "raw": "{{baseUrl}}/wallet/{{walletId}}/transactions",
+          "host": ["{{baseUrl}}"],
+          "path": ["wallet", "{{walletId}}", "transactions"]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "7. Test Idempotency (Run Twice - Same Result)",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"transactionId\": \"idempotent-test-123\",\n  \"walletId\": \"{{walletId}}\",\n  \"type\": \"DEPOSIT\",\n  \"amount\": 1000,\n  \"currency\": \"EGP\"\n}"
+        },
+        "url": {
+          "raw": "{{baseUrl}}/wallet/transaction",
+          "host": ["{{baseUrl}}"],
+          "path": ["wallet", "transaction"]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "8. Test Insufficient Funds (Should Fail)",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"transactionId\": \"tx-overdraw-{{$randomUUID}}\",\n  \"walletId\": \"{{walletId}}\",\n  \"type\": \"WITHDRAWAL\",\n  \"amount\": 999999,\n  \"currency\": \"EGP\"\n}"
+        },
+        "url": {
+          "raw": "{{baseUrl}}/wallet/transaction",
+          "host": ["{{baseUrl}}"],
+          "path": ["wallet", "transaction"]
+        }
+      },
+      "response": []
+    }
+  ],
+  "variable": [
+    {
+      "key": "baseUrl",
+      "value": "http://localhost:3000",
+      "type": "string"
+    },
+    {
+      "key": "walletId",
+      "value": "YOUR_WALLET_ID_HERE",
+      "type": "string"
+    }
+  ]
+}
