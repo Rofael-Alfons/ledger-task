@@ -259,7 +259,3 @@ npm run test:cov
 5. **Rate Limiting**: Implement rate limiting per wallet
 6. **Background Jobs**: Add reconciliation job to validate balance consistency
 7. **Caching**: Consider Redis for frequently accessed balances
-
-## License
-
-MIT
